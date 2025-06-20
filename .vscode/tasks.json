@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cppbuild",
+      "label": "C/C++: clang++ static build with Raylib (macOS)",
+      "command": "/usr/bin/clang++",
+      "args": [
+        "-std=c++17",
+        "-fcolor-diagnostics",
+        "-fansi-escape-codes",
+        "-g",
+
+        "-I${workspaceFolder}/dependencies/include",
+        "-L${workspaceFolder}/dependencies/lib",
+
+        "${workspaceFolder}/src/main.cpp",
+        "-o",
+        "${workspaceFolder}/app",
+
+        "-lraylib",
+        "-framework", "OpenGL",
+        "-framework", "Cocoa",
+        "-framework", "IOKit",
+        "-framework", "CoreVideo"
+      ],
+      "options": {
+        "cwd": "${fileDirname}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": "build",
+      "detail": "Static link with libraylib.a using clang++"
+    }
+  ]
+}
