@@ -63,7 +63,7 @@ Make sure you have the following installed:
 - [`raylib`](https://www.raylib.com/) (graphics & input library)
 - [`nlohmann/json`](https://github.com/nlohmann/json) (for JSON parsing)
 
-#### 🧱 Compile with `g++` (Linux/macOS example):
+#### 🧱 Compile with `g++` (Windows/Linux example):
 
 ```bash
 g++ src/main.cpp -o app \
