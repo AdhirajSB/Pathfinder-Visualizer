@@ -66,7 +66,10 @@ Make sure you have the following installed:
 #### 🧱 Compile with `g++` (Linux/macOS example):
 
 ```bash
-g++ main.cpp -o pathfinder -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+g++ src/main.cpp -o app \
+-Idependencies/include \
+-Ldependencies/lib -lraylib \
+-lGL -lm -lpthread -ldl -lrt -lX11
 ```
 
 > 💡 On macOS, replace `-lGL` and `-lX11` with:  
@@ -79,7 +82,7 @@ g++ main.cpp -o pathfinder -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 After compiling and generating the map data:
 
 ```bash
-./pathfinder
+./app
 ```
 
 ---
