@@ -1,6 +1,5 @@
 import osmnx as ox
 import matplotlib.pyplot as plt
-import contextily as ctx
 import os
 import shutil
 import json
@@ -45,7 +44,7 @@ plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 ax.set_axis_off()
 
 # Save with specific DPI and NO bbox_inches adjustment
-dpi = 100  # Use a round number for easier calculation
+dpi = 500  # Use a round number for easier calculation
 plt.savefig("../maps/map.png", dpi=dpi, bbox_inches=None, pad_inches=0)
 
 # Get actual figure size in pixels

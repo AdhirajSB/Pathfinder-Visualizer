@@ -3,7 +3,7 @@
   "lat_max": 23.2629926,
   "lon_min": 77.4062304,
   "lon_max": 77.4255566,
-  "image_width": 2000,
-  "image_height": 1859,
-  "dpi": 100
+  "image_width": 10000,
+  "image_height": 9295,
+  "dpi": 500
 }

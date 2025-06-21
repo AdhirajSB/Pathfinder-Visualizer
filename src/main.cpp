@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include <iomanip>
 
-const int width = 800;
-const int height = 600;
+const int width = 1200;
+const int height = 800;
 
 struct NodePosition {
     Vector2 pos;
@@ -22,17 +22,7 @@ int main(){
     Graph graph("./maps/map_graph.json");
     auto G = graph.getGraph();
     
-    string start_node = G.begin()->first;
-    string end_node = next(G.begin(), 10)->first;
     
-    Pathfinder dijkstra(G, start_node, end_node);
-    const auto& dist = dijkstra.GetDistances();
-
-    if (dist.at(end_node) == std::numeric_limits<double>::infinity()){
-        std::cout << "No path from " << start_node << " to " << end_node << " exists." << std::endl;
-        return 1;
-    }
-
     // Load bounds
     std::ifstream f("./maps/map_bounds.json");
     json bounds; f >> bounds; f.close();
@@ -64,7 +54,7 @@ int main(){
         std::cout << "Expected size from Python: " << expected_width << "x" << expected_height << std::endl;
         
         if (std::abs(actual_map_width - expected_width) > 1.0 || 
-            std::abs(actual_map_height - expected_height) > 1.0) {
+        std::abs(actual_map_height - expected_height) > 1.0) {
             std::cout << "WARNING: Image size mismatch detected!" << std::endl;
         }
     }
@@ -77,6 +67,41 @@ int main(){
     
     // Pre-calculate all node positions using the EXACT same formula as Python
     std::unordered_map<std::string, NodePosition> nodePositions;
+    
+    
+    double lat1, lon1, lat2, lon2;
+    std::cout << "Enter the start position (latitude, longitude): ";
+    std::cin >> lat1 >> lon1;
+    std::cout << "Enter the end position (latitude, longitude): ";
+    std::cin >> lat2 >> lon2;
+
+    string start_node, end_node;
+    double min_distance1 = std::numeric_limits<double>::max();
+    double min_distance2 = std::numeric_limits<double>::max();
+
+    for (const auto& [id, node]: G){
+        double distance1 = pow(node.lat - lat1, 2) + pow(node.lon - lon1, 2);
+
+        if (distance1 < min_distance1){
+            min_distance1 = distance1;
+            start_node = id;
+        }
+
+        double distance2 = pow(node.lat - lat2, 2) + pow(node.lon - lon2, 2);
+        if (distance2 < min_distance2){
+            min_distance2 = distance2;
+            end_node = id;
+        }
+    }
+
+    
+    Pathfinder dijkstra(G, start_node, end_node);
+    const auto& dist = dijkstra.GetDistances();
+
+    if (dist.at(end_node) == std::numeric_limits<double>::infinity()){
+        std::cout << "No path from " << start_node << " to " << end_node << " exists." << std::endl;
+        return 1;
+    }
     
     for (const auto& [id, node] : G) {
         // Use EXACT same calculation as Python script
@@ -94,14 +119,6 @@ int main(){
             {static_cast<float>(x), static_cast<float>(y)}, 
             nodeColor
         };
-        
-        // Debug first few nodes
-        static int debug_count = 0;
-        if (debug_count < 3) {
-            std::cout << "Node " << id << ": lat=" << node.lat << ", lon=" << node.lon;
-            std::cout << " -> pixel(" << x << ", " << y << ")" << std::endl;
-            debug_count++;
-        }
     }
     
     // Pre-calculate path positions
@@ -122,21 +139,21 @@ int main(){
         BeginMode2D(renderer.GetCamera());
         renderer.DrawMap();
 
-        // Draw all nodes using pre-calculated positions
+        // Draw all nodes
         for (const auto& [id, nodePos] : nodePositions) {
-            DrawCircleV(nodePos.pos, 6.0f, nodePos.color);
+            DrawCircleV(nodePos.pos, 18.0f, nodePos.color);
             
-            // Draw a small cross in the center for precise alignment checking
-            DrawLineEx({nodePos.pos.x - 2, nodePos.pos.y}, 
-                      {nodePos.pos.x + 2, nodePos.pos.y}, 1.0f, BLACK);
-            DrawLineEx({nodePos.pos.x, nodePos.pos.y - 2}, 
-                      {nodePos.pos.x, nodePos.pos.y + 2}, 1.0f, BLACK);
+            // Draw a small cross in the center
+            DrawLineEx({nodePos.pos.x - 4, nodePos.pos.y}, 
+                      {nodePos.pos.x + 4, nodePos.pos.y}, 2.0f, BLACK);
+            DrawLineEx({nodePos.pos.x, nodePos.pos.y - 4}, 
+                      {nodePos.pos.x, nodePos.pos.y + 4}, 2.0f, BLACK);
         }
 
         // Draw the path
         if (pathPositions.size() > 1) {
             for (size_t i = 0; i < pathPositions.size() - 1; i++) {
-                DrawLineEx(pathPositions[i], pathPositions[i + 1], 3.0f, ORANGE);
+                DrawLineEx(pathPositions[i], pathPositions[i + 1], 20.0f, ORANGE);
             }
         }
 
