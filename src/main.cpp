@@ -13,6 +13,9 @@ struct NodePosition {
 };
 
 int main(){
+    std::freopen("/dev/null", "w", stderr); // Silence MacOS
+    SetTraceLogLevel(LOG_NONE); // Silence Raylib
+    
     Renderer renderer(width, height, "Dijkstra-Pathfinder");
     renderer.LoadMap("./maps/map.png");
     
@@ -32,9 +35,7 @@ int main(){
 
     // Load bounds
     std::ifstream f("./maps/map_bounds.json");
-    json bounds; 
-    f >> bounds;
-    f.close();
+    json bounds; f >> bounds; f.close();
     
     // Extract bounds with verification
     double lat_max = bounds["lat_max"].get<double>();
@@ -116,7 +117,7 @@ int main(){
         renderer.HandleInput();
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(WHITE);
 
         BeginMode2D(renderer.GetCamera());
         renderer.DrawMap();
