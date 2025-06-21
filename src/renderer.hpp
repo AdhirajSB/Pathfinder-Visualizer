@@ -5,105 +5,95 @@
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
 
-
 class Renderer {
-    private:
+private:
     int m_Width, m_Height;
-    float m_Zoom = 1.0f;
-
+    Camera2D m_Camera;
     Image m_MapImage;
     Texture2D m_MapTexture;
-    Vector2 m_Offset = {0, 0};
 
-    public:
+public:
     Renderer(int width, int height, const std::string& name)
-        :m_Width(width), m_Height(height) 
+        : m_Width(width), m_Height(height)
     {
         InitWindow(m_Width, m_Height, name.c_str());
         SetTargetFPS(60);
+
+        // Initialize camera
+        m_Camera.offset = { m_Width / 2.0f, m_Height / 2.0f };
+        m_Camera.target = { 0, 0 };
+        m_Camera.zoom = 1.0f;
+        m_Camera.rotation = 0.0f;
     }
+
     ~Renderer() {
         UnloadTexture(m_MapTexture);
         CloseWindow();
     }
 
+    inline float MapWidth() const { return m_MapTexture.width; }
+    inline float MapHeight() const { return m_MapTexture.height; }
+
     void LoadMap(const std::string& path) {
         m_MapImage = LoadImage(path.c_str());
         m_MapTexture = LoadTextureFromImage(m_MapImage);
-
         UnloadImage(m_MapImage);
 
-        m_Offset.x = (m_Width - m_MapTexture.width) / 2.0f;
-        m_Offset.y = (m_Height - m_MapTexture.height) / 2.0f;
+        // Center camera on map
+        m_Camera.target = {
+            m_MapTexture.width / 2.0f,
+            m_MapTexture.height / 2.0f
+        };
     }
 
     void HandleInput() {
         float wheel = GetMouseWheelMove();
-        if (wheel != 0.0f){
-            Vector2 mouse = GetMousePosition();
-            Vector2 worldPos = {
-                (mouse.x - m_Offset.x) / m_Zoom,
-                (mouse.y - m_Offset.y) / m_Zoom
-            };
-
+        if (wheel != 0.0f) {
             const float zoomFactor = 1.1f;
+            Vector2 mouseScreen = GetMousePosition();
+            Vector2 mouseWorld = GetScreenToWorld2D(mouseScreen, m_Camera);
 
-            if (wheel > 0) m_Zoom *= zoomFactor;
-            else if (wheel < 0) m_Zoom /= zoomFactor;
+            if (wheel > 0) m_Camera.zoom *= zoomFactor;
+            else m_Camera.zoom /= zoomFactor;
 
-            m_Zoom = Clamp(m_Zoom, 0.1f, 10.0f);
+            m_Camera.zoom = Clamp(m_Camera.zoom, 0.1f, 10.0f);
 
-            m_Offset.x = mouse.x - worldPos.x * m_Zoom;
-            m_Offset.y = mouse.y - worldPos.y * m_Zoom;
+            Vector2 newMouseWorld = GetScreenToWorld2D(mouseScreen, m_Camera);
+            Vector2 delta = Vector2Subtract(mouseWorld, newMouseWorld);
+            m_Camera.target = Vector2Add(m_Camera.target, delta);
         }
 
-        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)){
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
             Vector2 delta = GetMouseDelta();
-            m_Offset.x += delta.x;
-            m_Offset.y += delta.y;
+            delta = Vector2Scale(delta, -1.0f / m_Camera.zoom);
+            m_Camera.target = Vector2Add(m_Camera.target, delta);
         }
-
-        SetBounds();
     }
 
-    void DrawBackground() {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        DrawTextureEx(
-            m_MapTexture,
-            m_Offset,
-            0.0f,
-            m_Zoom,
-            WHITE
-        );
-        EndDrawing();
+    void DrawMap() {
+        DrawTexture(m_MapTexture, 0, 0, WHITE);
     }
 
     inline bool Running() const { return !WindowShouldClose(); }
 
-    private:
-    void SetBounds() {
-        float imageWidth = m_MapTexture.width * m_Zoom;
-        float imageHeight = m_MapTexture.height * m_Zoom;
+    Vector2 ScreenToWorld(Vector2 screenPos) const {
+        return GetScreenToWorld2D(screenPos, m_Camera);
+    }
+
+    Vector2 WorldToScreen(Vector2 worldPos) const {
+        return GetWorldToScreen2D(worldPos, m_Camera);
+    }
+    
+    const Camera2D& GetCamera() const { return m_Camera; }
+    
+    // Utility method for precise coordinate conversion
+    Vector2 LatLonToPixel(double lat, double lon, 
+                         double lat_min, double lat_max, 
+                         double lon_min, double lon_max) const {
+        double x = ((lon - lon_min) / (lon_max - lon_min)) * static_cast<double>(m_MapTexture.width);
+        double y = ((lat_max - lat) / (lat_max - lat_min)) * static_cast<double>(m_MapTexture.height);
         
-        // Calculate bounds
-        float minX = m_Width - imageWidth;  
-        float maxX = 0;                   
-        float minY = m_Height - imageHeight; 
-        float maxY = 0;                   
-        
-        // If image is smaller than screen, center it
-        if (imageWidth < m_Width) {
-            minX = maxX = (m_Width - imageWidth) / 2;
-        }
-        if (imageHeight < m_Height) {
-            minY = maxY = (m_Height - imageHeight) / 2;
-        }
-        
-        // Apply constraints
-        m_Offset.x = Clamp(m_Offset.x, minX, maxX);
-        m_Offset.y = Clamp(m_Offset.y, minY, maxY);
+        return {static_cast<float>(x), static_cast<float>(y)};
     }
 };
 
