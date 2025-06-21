@@ -5,6 +5,10 @@ A real-world Dijkstra pathfinding visualizer built with **Raylib** and **C++**, 
 It allows interactive visualization of road networks, selection of custom start and end points, and renders the shortest path using Dijkstra’s algorithm.
 
 ---
+## 🖼️ Preview
+
+![Pathfinder Demo](screenshots/demo.png)
+
 
 ## ✨ Features
 
