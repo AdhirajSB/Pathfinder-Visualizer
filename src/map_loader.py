@@ -6,10 +6,24 @@ import shutil
 import json
 
 # Get the road network around a point
-G = ox.graph.graph_from_point((23.2540, 77.4160), dist = 500, network_type = "drive")
+G = ox.graph.graph_from_point((23.2540, 77.4160), dist = 1000, network_type = "drive")
 
 # Convert graph to GeoDataFrames
 gdf_nodes, gdf_edges = ox.graph_to_gdfs(G, nodes = True, edges = True)
+
+
+# Compute bounding box
+bounds = {
+    "lat_min": float(gdf_nodes['y'].min()),
+    "lat_max": float(gdf_nodes['y'].max()),
+    "lon_min": float(gdf_nodes['x'].min()),
+    "lon_max": float(gdf_nodes['x'].max())
+}
+
+# Save to JSON
+with open("../maps/map_bounds.json", "w") as f:
+    json.dump(bounds, f, indent=2)
+
 
 # Plot edges and nodes
 fig, ax = plt.subplots(figsize=(20, 20))

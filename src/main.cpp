@@ -23,8 +23,20 @@ int main(){
         return 1;
     }
 
+    std::ifstream f("./maps/map_bounds.json");
+    json bounds; f >> bounds;
+
     while (renderer.Running()){
         renderer.HandleInput();
+
+        for (const auto& [id, node]: G){
+            double lat_max = bounds["lat_max"], lat_min = bounds["lat_min"];
+            double lon_max = bounds["lon_max"], lon_min = bounds["lon_min"];
+            double x = ((lat_max - node.lat) / (lat_max - lat_min)) * width;
+            double y = ((lon_max - node.lon) / (lon_min - lon_max)) * height;
+
+            std::cout << x << '-' << y << '\n';
+        }
         renderer.DrawBackground();
     }
 }
